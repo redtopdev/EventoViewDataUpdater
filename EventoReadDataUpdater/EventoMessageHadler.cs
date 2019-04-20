@@ -1,5 +1,7 @@
 ﻿using Engaze.Core.MessageBroker.Consumer;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Text;
 
 namespace Engaze.Evento.ViewDataUpdater.Service
 {
@@ -12,7 +14,14 @@ namespace Engaze.Evento.ViewDataUpdater.Service
 
         public void OnMessageReceived(string message)
         {
-            Console.WriteLine(message);
+            //string data = Encoding.ASCII.GetString();
+            JObject eventoJObject = JObject.Parse(message);
+            string eventType = eventoJObject.GetValue("EventType").ToString();
+            if (eventType.Equals("4"))
+            {
+
+            }
+
         }
     }
 }

@@ -6,7 +6,6 @@
     using Microsoft.Extensions.DependencyInjection;
     using System;
     using Engaze.Core.MessageBroker.Consumer;
-    using KafkaListener;
 
     class Program
     {
