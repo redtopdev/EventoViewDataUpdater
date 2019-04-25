@@ -11,12 +11,15 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
 
         public string Password { get; private set; }
 
+        public string KeySpace { get; set; }
+
         public CassandraConfiguration(IConfigurationRoot config)
         {
-            ContactPoint  = "127.0.0.1";
+            ContactPoint = "127.0.0.1";
             Port = 9042;
             UserName = "cassandra";
             Password = "password123";
+            KeySpace = "Engaze";
         }
     }
 }

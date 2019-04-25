@@ -8,34 +8,36 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
     {
         private CassandraSessionCacheManager sessionCacheManager;
         private Mapper mapper;
+        private string keySpace;
 
-        public CassandraRepository(CassandraSessionCacheManager sessionCacheManager)
+        public CassandraRepository(CassandraSessionCacheManager sessionCacheManager, string keySpace)
         {
             this.sessionCacheManager = sessionCacheManager;
+            this.keySpace = keySpace;
         }
 
         public async Task<string> GetAsync(string id, string keySpace)
         {
-            SetSessionAndMapper(keySpace);
+            SetSessionAndMapper();
 
             return await mapper. FirstOrDefaultAsync<string>("SELECT * FROM \"Test\" WHERE id = ?", id);
         }
 
-        public async Task PostAsync(string data, string keySpace)
+        public async Task PostAsync(string data)
         {
-            SetSessionAndMapper(keySpace);
+            SetSessionAndMapper();
 
             await mapper.InsertAsync(data);
         }
 
-        public async Task DeleteAsync(Guid id, string keySpace)
+        public async Task DeleteAsync(Guid id)
         {
-            SetSessionAndMapper(keySpace);
+            SetSessionAndMapper();
 
             await mapper.DeleteAsync<string>("WHERE id = ?", id);
         }
 
-        private void SetSessionAndMapper(string keySpace)
+        private void SetSessionAndMapper()
         {
             var session = sessionCacheManager.GetSession(keySpace);
             mapper = new Mapper(session);

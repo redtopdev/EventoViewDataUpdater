@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Engaze.Core.MessageBroker.Consumer\Engaze.Core.MessageBroker.Consumer.csproj" />
+    <ProjectReference Include="..\Engaze.Evento.ViewDataUpdater.Contract\Engaze.Evento.ViewDataUpdater.Contract.csproj" />
+    <ProjectReference Include="..\Engaze.Evento.ViewDataUpdater.Persistance\Engaze.Evento.ViewDataUpdater.Persistance.csproj" />
   </ItemGroup>
 
 </Project>
