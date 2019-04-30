@@ -8,67 +8,98 @@ namespace Engaze.Evento.ViewDataUpdater.Contract
     {
         public Guid id { get; set; }
         public Guid userid { get; set; }
+        public Guid initiatorid { get; set; }
         public string name { get; set; }
-        public int eventtypeid { get; set; }
-        public string description { get; set; }
-        public DateTime starttime { get; set; }
-        public DateTime endtime { get; set; }
-        public int duration { get; set; }
-        public int initiatorid { get; set; }
-        public int eventstateid { get; set; }
-        public int trackingstateid { get; set; }
-        public DateTime trackingstoptime { get; set; }
-        public double destinationlatitude { get; set; }
-        public double destinationlongitude { get; set; }
-        public string destinationname { get; set; }
-        public string destinationaddress { get; set; }
-        public int remindertypeid { get; set; }
-        public double reminderoffset { get; set; }
-        public double trackingstartoffset { get; set; }
-        public bool isrecurring { get; set; }
-        public int recurrencefrequencytypeid { get; set; }
-        public int recurrencecount { get; set; }
-        public int recurrencefrequency { get; set; }
-        public string recurrencedaysofweek { get; set; }
-        List<Guid> participants { get; set; }
+        public int? eventtypeid { get; set; } = null;
+        public string description { get; set; } = null;
+        public DateTime? starttime { get; set; } = null;
+        public DateTime? endtime { get; set; } = null;
+        public int? duration { get; set; } = null;
+        public int? eventstateid { get; set; } = null;
+        public int? trackingstateid { get; set; } = null;
+        public DateTime? trackingstoptime { get; set; } = null;
+        public double? destinationlatitude { get; set; } = null;
+        public double? destinationlongitude { get; set; } = null;
+        public string destinationname { get; set; } = null;
+        public string destinationaddress { get; set; } = null;
+        public int? remindertypeid { get; set; } = null;
+        public double? reminderoffset { get; set; } = null;
+        public double? trackingstartoffset { get; set; } = null;
+        public bool? isrecurring { get; set; } = null;
+        public int? recurrencefrequencytypeid { get; set; } = null;
+        public int? recurrencecount { get; set; } = null;
+        public int? recurrencefrequency { get; set; } = null;
+        public string recurrencedaysofweek { get; set; } = null;
+        public List<string> participantswithacceptancestate { get; set; }
 
         public static Event Map(JObject eventoJObject)
         {
-          
+
             var @event = new Event()
             {
-
                 id = Guid.NewGuid(),
-                userid = eventoJObject.Value<Guid>("InitiatorId "),
+
+
                 name = eventoJObject.Value<string>("Description"),
-                eventtypeid = eventoJObject.Value<int>("EventTypeId"),
                 description = eventoJObject.Value<string>("Description"),
-                starttime = eventoJObject.Value<DateTime>("StartTime "),
-                endtime = eventoJObject.Value<DateTime>("EndTime "),
+                eventtypeid = eventoJObject.Value<int>("EventTypeId"),
+                eventstateid = eventoJObject.Value<int>("EventType"),
+
+                starttime = eventoJObject.Value<DateTime>("StartTime"),
+                endtime = eventoJObject.Value<DateTime>("EndTime"),
+                trackingstateid = eventoJObject.Value<int>("TrackingStateId"),
+                trackingstoptime = eventoJObject.Value<DateTime>("TrackingStopTime"),
+                trackingstartoffset = eventoJObject.Value<double>("TrackingStartOffset"),
+
+                isrecurring = eventoJObject.Value<bool>("IsRecurring"),
+                recurrencefrequencytypeid = eventoJObject.Value<int>("RecurrenceFrequencyTypeid"),
+                recurrencecount = eventoJObject.Value<int>("RecurrenceCount"),
+                recurrencefrequency = eventoJObject.Value<int>("RecurrenceFrequency"),
+                recurrencedaysofweek = eventoJObject.Value<string>("RecurrenceDaysOfweek")
+
             };
+            JToken value;
+            if (eventoJObject.TryGetValue("ReminderTypeId", out value))
+            {
+                @event.remindertypeid = (int)value;
+            }
+
+            if (eventoJObject.TryGetValue("Destination", out value))
+            {
+                var destination = (JObject)value;
+                if (destination.TryGetValue("Latitude", out value))
+                {
+                    @event.destinationlatitude = (double)value;
+                }
+                if (destination.TryGetValue("Longitude", out value))
+                {
+                    @event.destinationlongitude = (double)value;
+                }
+                if (destination.TryGetValue("Name", out value))
+                {
+                    @event.destinationname = value.ToString();
+                }
+                if (destination.TryGetValue("Address", out value))
+                {
+                    @event.destinationaddress = value.ToString();
+                }
+            }
+            //reminderoffset = eventoJObject.Value<double?>("ReminderOffset"),
 
 
 
-            //   duration = eventoJObject.GetValue("EventType").ToString(),
-            //initiatorid = eventoJObject.GetValue("EventType").ToString(),
-            //  eventstateid = eventoJObject.GetValue("EventType").ToString(),
-            //  trackingstateid = eventoJObject.GetValue("EventType").ToString(),
-            //   trackingstoptime = eventoJObject.GetValue("EventType").ToString(),
-            //   destinationlatitude = eventoJObject.GetValue("EventType").ToString(),
-            //  destinationlongitude = eventoJObject.GetValue("EventType").ToString(),
-            //   destinationname = eventoJObject.GetValue("EventType").ToString(),
-            //   destinationaddress = eventoJObject.GetValue("EventType").ToString(),
-            //   remindertypeid = eventoJObject.GetValue("EventType").ToString(),
-            //    reminderoffset = eventoJObject.GetValue("EventType").ToString(),
-            //    trackingstartoffset = eventoJObject.GetValue("EventType").ToString(),
-            //    isrecurring = eventoJObject.GetValue("EventType").ToString(),
-            //  recurrencefrequencytypeid = eventoJObject.GetValue("EventType").ToString(),
-            //  recurrencecount = eventoJObject.GetValue("EventType").ToString(),
-            //   recurrencefrequency = eventoJObject.GetValue("EventType").ToString(),
-            // recurrencedaysofweek = eventoJObject.GetValue("EventType").ToString()
 
+
+            @event.userid = Guid.Parse(eventoJObject.Value<string>("InitiatorId"));
+            @event.initiatorid = Guid.Parse(eventoJObject.Value<string>("InitiatorId"));
 
             return @event;
+
+            //   duration = eventoJObject.Value<string>("EventType"),
+            //   destinationlatitude = eventoJObject.Value<string>("EventType"),
+            //  destinationlongitude = eventoJObject.Value<string>("EventType"),
+            //   destinationname = eventoJObject.Value<string>("EventType"),
+            //   destinationaddress = eventoJObject.Value<string>("EventType"),
         }
     }
 }

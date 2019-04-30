@@ -19,7 +19,7 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
             Port = 9042;
             UserName = "cassandra";
             Password = "password123";
-            KeySpace = "Engaze";
+            KeySpace = "engaze";
         }
     }
 }

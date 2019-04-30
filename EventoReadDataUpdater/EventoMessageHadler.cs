@@ -1,6 +1,7 @@
 ﻿using Engaze.Core.MessageBroker.Consumer;
 using Engaze.Evento.ViewDataUpdater.Contract;
 using Engaze.Evento.ViewDataUpdater.Persistance;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
@@ -26,7 +27,8 @@ namespace Engaze.Evento.ViewDataUpdater.Service
             try
             {
                 var eventObject = parseMessage(JObject.Parse(message));
-                await this.repo.PostAsync(eventObject.ToString());
+                
+                await this.repo.PostAsync(eventObject);
             }
             catch (Exception ex)
             {
