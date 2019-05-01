@@ -4,8 +4,10 @@ using Engaze.Evento.ViewDataUpdater.Persistance;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using static Engaze.Evento.ViewDataUpdater.Contract.Event;
 
 namespace Engaze.Evento.ViewDataUpdater.Service
 {
@@ -26,9 +28,16 @@ namespace Engaze.Evento.ViewDataUpdater.Service
         {
             try
             {
-                var eventObject = parseMessage(JObject.Parse(message));
-                
-                await this.repo.PostAsync(eventObject);
+                Event @event = parseMessage(JObject.Parse(message));
+                if (@event != null)
+                {
+                    foreach(ParticipantsWithStatus participnat in @event.Participants)
+                    {
+                        @event.userid = participnat.UserId;
+                        await this.repo.PostAsync(@event);
+                    }
+                }
+               
             }
             catch (Exception ex)
             {

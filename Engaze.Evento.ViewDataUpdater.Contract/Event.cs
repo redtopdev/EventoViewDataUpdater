@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Engaze.Evento.ViewDataUpdater.Contract
@@ -30,76 +31,97 @@ namespace Engaze.Evento.ViewDataUpdater.Contract
         public int? recurrencecount { get; set; } = null;
         public int? recurrencefrequency { get; set; } = null;
         public string recurrencedaysofweek { get; set; } = null;
-        public List<string> participantswithacceptancestate { get; set; }
+        public List<ParticipantsWithStatus> Participants { get; set; }
+        public string participantswithacceptancestate { get; set; }
+
+
+        public class ParticipantsWithStatus
+        {
+            public Guid UserId { get; set; }
+            public int AcceptanceState { get; set; }
+        }
 
         public static Event Map(JObject eventoJObject)
         {
-
-            var @event = new Event()
+            List<Event> eventWithSeperateUser = new List<Event>();
+            JToken jToken;
+            if (eventoJObject.TryGetValue("Participants", out jToken))
             {
-                id = Guid.NewGuid(),
+
+                var participants = (JArray)jToken;
+
+                var @event = new Event()
+                {
+                    id = Guid.NewGuid(),
+
+                    name = eventoJObject.Value<string>("Description"),
+                    description = eventoJObject.Value<string>("Description"),
+                    eventtypeid = eventoJObject.Value<int>("EventTypeId"),
+                    eventstateid = eventoJObject.Value<int>("EventType"),
+
+                    starttime = eventoJObject.Value<DateTime>("StartTime"),
+                    endtime = eventoJObject.Value<DateTime>("EndTime"),
+                    trackingstateid = eventoJObject.Value<int>("TrackingStateId"),
+                    trackingstoptime = eventoJObject.Value<DateTime>("TrackingStopTime"),
+                    trackingstartoffset = eventoJObject.Value<double>("TrackingStartOffset")
+
+                };
+
+                JToken value;
+                if (eventoJObject.TryGetValue("ReminderTypeId", out value))
+                {
+                    @event.remindertypeid = (int)value;
+                }
+
+                @event.Participants = participants.ToObject<List<ParticipantsWithStatus>>();
+                @event.participantswithacceptancestate = JsonConvert.SerializeObject(@event.Participants);
+                //@event.participantswithacceptancestate = participants.ToString();
 
 
-                name = eventoJObject.Value<string>("Description"),
-                description = eventoJObject.Value<string>("Description"),
-                eventtypeid = eventoJObject.Value<int>("EventTypeId"),
-                eventstateid = eventoJObject.Value<int>("EventType"),
+                if (eventoJObject.TryGetValue("Destination", out value))
+                {
+                    var destination = (JObject)value;
+                    if (destination.TryGetValue("Latitude", out value))
+                    {
+                        @event.destinationlatitude = (double)value;
+                    }
+                    if (destination.TryGetValue("Longitude", out value))
+                    {
+                        @event.destinationlongitude = (double)value;
+                    }
+                    if (destination.TryGetValue("Name", out value))
+                    {
+                        @event.destinationname = value.ToString();
+                    }
+                    if (destination.TryGetValue("Address", out value))
+                    {
+                        @event.destinationaddress = value.ToString();
+                    }
+                }
 
-                starttime = eventoJObject.Value<DateTime>("StartTime"),
-                endtime = eventoJObject.Value<DateTime>("EndTime"),
-                trackingstateid = eventoJObject.Value<int>("TrackingStateId"),
-                trackingstoptime = eventoJObject.Value<DateTime>("TrackingStopTime"),
-                trackingstartoffset = eventoJObject.Value<double>("TrackingStartOffset"),
+                if (eventoJObject.TryGetValue("IsRecurring", out value) && (bool)value)
+                {
+                    @event.isrecurring = true;
+                    @event.isrecurring = eventoJObject.Value<bool>("IsRecurring");
+                    @event.recurrencefrequencytypeid = eventoJObject.Value<int>("RecurrenceFrequencyTypeid");
+                    @event.recurrencecount = eventoJObject.Value<int>("RecurrenceCount");
+                    @event.recurrencefrequency = eventoJObject.Value<int>("RecurrenceFrequency");
+                    @event.recurrencedaysofweek = eventoJObject.Value<string>("RecurrenceDaysOfweek");
+                }
 
-                isrecurring = eventoJObject.Value<bool>("IsRecurring"),
-                recurrencefrequencytypeid = eventoJObject.Value<int>("RecurrenceFrequencyTypeid"),
-                recurrencecount = eventoJObject.Value<int>("RecurrenceCount"),
-                recurrencefrequency = eventoJObject.Value<int>("RecurrenceFrequency"),
-                recurrencedaysofweek = eventoJObject.Value<string>("RecurrenceDaysOfweek")
+                @event.initiatorid = Guid.Parse(eventoJObject.Value<string>("InitiatorId"));
+                //string eventString = JsonConvert.SerializeObject(@event);
 
-            };
-            JToken value;
-            if (eventoJObject.TryGetValue("ReminderTypeId", out value))
-            {
-                @event.remindertypeid = (int)value;
+                //foreach (JObject participant in participants)
+                //{
+                //    @event = JsonConvert.DeserializeObject<Event>(eventString);
+                //    @event.userid = Guid.Parse((string)participant.GetValue("UserId"));
+                //    eventWithSeperateUser.Add(@event);
+                //}
+                return @event;
             }
 
-            if (eventoJObject.TryGetValue("Destination", out value))
-            {
-                var destination = (JObject)value;
-                if (destination.TryGetValue("Latitude", out value))
-                {
-                    @event.destinationlatitude = (double)value;
-                }
-                if (destination.TryGetValue("Longitude", out value))
-                {
-                    @event.destinationlongitude = (double)value;
-                }
-                if (destination.TryGetValue("Name", out value))
-                {
-                    @event.destinationname = value.ToString();
-                }
-                if (destination.TryGetValue("Address", out value))
-                {
-                    @event.destinationaddress = value.ToString();
-                }
-            }
-            //reminderoffset = eventoJObject.Value<double?>("ReminderOffset"),
-
-
-
-
-
-            @event.userid = Guid.Parse(eventoJObject.Value<string>("InitiatorId"));
-            @event.initiatorid = Guid.Parse(eventoJObject.Value<string>("InitiatorId"));
-
-            return @event;
-
-            //   duration = eventoJObject.Value<string>("EventType"),
-            //   destinationlatitude = eventoJObject.Value<string>("EventType"),
-            //  destinationlongitude = eventoJObject.Value<string>("EventType"),
-            //   destinationname = eventoJObject.Value<string>("EventType"),
-            //   destinationaddress = eventoJObject.Value<string>("EventType"),
+            return null;
         }
     }
 }

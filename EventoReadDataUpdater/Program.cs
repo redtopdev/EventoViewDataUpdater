@@ -13,6 +13,7 @@
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("Service is starting..");
 
             new HostBuilder().ConfigureHostConfiguration(configHost =>
             {
@@ -56,6 +57,8 @@
             CassandraRepository cr = new CassandraRepository(
                 new CassandraSessionCacheManager(cluster), cc.KeySpace);
             services.AddSingleton(cr.GetType(), cr);
+
+            Console.WriteLine("Service running");
         }
     }
 }
