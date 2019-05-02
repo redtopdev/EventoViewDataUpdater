@@ -13,7 +13,7 @@ namespace Engaze.Evento.ViewDataUpdater.Service
 {
     public class EventoMessageHadler : IMessageHandler
     {
-        private CassandraRepository repo;      
+        private CassandraRepository repo;
 
         public EventoMessageHadler(CassandraRepository cassandraRepository)
         {
@@ -28,16 +28,9 @@ namespace Engaze.Evento.ViewDataUpdater.Service
         {
             try
             {
-                Event @event = parseMessage(JObject.Parse(message));
-                if (@event != null)
-                {
-                    foreach(ParticipantsWithStatus participnat in @event.Participants)
-                    {
-                        @event.userid = participnat.UserId;
-                        await this.repo.PostAsync(@event);
-                    }
-                }
-               
+                await ProcessMessage(JObject.Parse(message));
+
+
             }
             catch (Exception ex)
             {
@@ -45,16 +38,53 @@ namespace Engaze.Evento.ViewDataUpdater.Service
             }
         }
 
-        private Event parseMessage(JObject eventoJObject)
+        private async Task ProcessMessage(JObject msgJObject)
         {
-            string eventType = eventoJObject.Value<string>("EventType");
+            string eventType = msgJObject.Value<string>("EventType");
+            JObject eventoObject = msgJObject.Value<JObject>("Data");
+            Guid eventId = Guid.Empty;
+
             switch (eventType)
             {
                 case "EventoCreated":
-                    return Event.Map(JObject.Parse(eventoJObject.Value<string>("Data")));
+                    Event @event = Event.Map(eventoObject);
+                    if (@event != null)
+                    {
+                        foreach (ParticipantsWithStatus participnat in @event.Participants)
+                        {
+                            @event.userid = participnat.UserId;
+                            await this.repo.InsertAsync(@event);
+                        }
+                    }
+                    break;
+                case "EventoDeleted":
+                    eventId = Guid.Parse(eventoObject.Value<string>("EventoId"));
+                    await this.repo.DeleteAsync(eventId);
+                    break;
+                case "EventoEnded":
+                    eventId = Guid.Parse(eventoObject.Value<string>("EventoId"));
+                    await this.repo.ParticipantStateUpdated(eventId);
+                    break;
+                case "EventoExtended":
+                    eventId = eventoObject.Value<Guid>("EventoId");
+                    await this.repo.ExtendEventAsync(eventId);
+                    break;
+                case "ParticipantLeft":
+                    eventId = eventoObject.Value<Guid>("EventoId");
+                    await this.repo.ParticipantStateUpdated(eventId);
+                    break;
+                case "ParticipantsListUpdated":
+                    eventId = eventoObject.Value<Guid>("eventId");
+                    await this.repo.ParticipantStateUpdated(eventId);
+                    break;
+                case "ParticipantStateUpdated":
+                    eventId = eventoObject.Value<Guid>("eventId");
+                    await this.repo.ParticipantStateUpdated(eventId);
+                    break;
 
                 default:
-                    return null;
+                    break;
+
             }
         }
     }

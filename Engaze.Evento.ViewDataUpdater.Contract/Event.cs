@@ -52,7 +52,7 @@ namespace Engaze.Evento.ViewDataUpdater.Contract
 
                 var @event = new Event()
                 {
-                    id = Guid.NewGuid(),
+                    id = Guid.Parse(eventoJObject.Value<string>("EventoId")),
 
                     name = eventoJObject.Value<string>("Description"),
                     description = eventoJObject.Value<string>("Description"),

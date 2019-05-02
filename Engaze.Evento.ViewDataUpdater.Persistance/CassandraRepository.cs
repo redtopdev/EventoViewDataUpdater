@@ -2,6 +2,7 @@
 using Cassandra.Mapping;
 using Engaze.Evento.ViewDataUpdater.Contract;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Engaze.Evento.ViewDataUpdater.Persistance
@@ -28,7 +29,7 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
         }
 
 
-        public async Task PostAsync(Event @event)
+        public async Task InsertAsync(Event @event)
         {
             var session = sessionCacheManager.GetSession(keySpace);
             var ips = session.Prepare(CassandraDML.InsertStatement);
@@ -43,12 +44,40 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
             await session.ExecuteAsync(statement);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid eventId)
         {
-            SetSessionAndMapper();
+            var session = sessionCacheManager.GetSession(keySpace);
+            var ips = session.Prepare(CassandraDML.SelectUserIdStatement);
+            var statement = ips.Bind(eventId);
 
-            await mapper.DeleteAsync<string>("WHERE id = ?", id);
+            var result = await session.ExecuteAsync(statement);
+            var rows = result.GetRows().ToList();
+            if (rows.Count > 0)
+            {
+                var batch = new BatchStatement();
+                PreparedStatement dps = null;
+               
+                foreach (var row in rows)
+                {
+                    dps = session.Prepare(CassandraDML.eventDeleteStatement);                  
+                    batch.Add(dps.Bind(eventId, row.GetValue<Guid>("userid")));                   
+                }
+
+                session.Execute(batch);
+            }
         }
+
+        public Task ExtendEventAsync(Guid eventId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ParticipantStateUpdated(Guid eventId)
+        {
+            throw new NotImplementedException();
+        }
+
+
 
         private void SetSessionAndMapper()
         {
