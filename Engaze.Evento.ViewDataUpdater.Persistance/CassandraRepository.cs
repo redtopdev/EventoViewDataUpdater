@@ -2,7 +2,9 @@
 using Cassandra.Mapping;
 using Engaze.Evento.ViewDataUpdater.Contract;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Engaze.Evento.ViewDataUpdater.Persistance
@@ -47,24 +49,12 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
         public async Task DeleteAsync(Guid eventId)
         {
             var session = sessionCacheManager.GetSession(keySpace);
-            var ips = session.Prepare(CassandraDML.SelectUserIdStatement);
-            var statement = ips.Bind(eventId);
-
+            var statement = session.Prepare(CassandraDML.SelectUserIdStatement).Bind(eventId);
             var result = await session.ExecuteAsync(statement);
-            var rows = result.GetRows().ToList();
-            if (rows.Count > 0)
-            {
-                var batch = new BatchStatement();
-                PreparedStatement dps = null;
-               
-                foreach (var row in rows)
-                {
-                    dps = session.Prepare(CassandraDML.eventDeleteStatement);                  
-                    batch.Add(dps.Bind(eventId, row.GetValue<Guid>("userid")));                   
-                }
 
-                session.Execute(batch);
-            }
+            var ids = result.GetRows().Select(row => row.GetValue<Guid>("userid"));
+            statement = session.Prepare(CassandraDML.eventDeleteStatement).Bind(eventId, ids);
+            await session.ExecuteAsync(statement);
         }
 
         public Task ExtendEventAsync(Guid eventId)

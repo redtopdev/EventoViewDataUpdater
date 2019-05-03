@@ -15,6 +15,6 @@
         internal static string SelectUserIdStatement = "select userid from ez_event " +
             "WHEre id=? ALLOW FILTERING";
 
-        internal static string eventDeleteStatement = "Delete from ez_event where id=? and userid=? IF EXISTS";
+        internal static string eventDeleteStatement = "Delete from ez_event where id=? and userid IN ?;";
     }
 }
