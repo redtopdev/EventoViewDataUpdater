@@ -1,10 +1,8 @@
-﻿using Cassandra;
-using Cassandra.Mapping;
+﻿using Cassandra.Mapping;
 using Engaze.Evento.ViewDataUpdater.Contract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Engaze.Evento.ViewDataUpdater.Persistance
@@ -14,22 +12,12 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
         private CassandraSessionCacheManager sessionCacheManager;
         private Mapper mapper;
         private string keySpace;
-        private PreparedStatement ips;
 
         public CassandraRepository(CassandraSessionCacheManager sessionCacheManager, string keySpace)
         {
             this.sessionCacheManager = sessionCacheManager;
             this.keySpace = keySpace;
         }
-
-
-        public async Task<string> GetAsync(string id, string keySpace)
-        {
-            SetSessionAndMapper();
-
-            return await mapper.FirstOrDefaultAsync<string>("SELECT * FROM \"Test\" WHERE id = ?", id);
-        }
-
 
         public async Task InsertAsync(Event @event)
         {
@@ -48,26 +36,30 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
 
         public async Task DeleteAsync(Guid eventId)
         {
+            var ids = await GetAffectedUserIdList(eventId);
             var session = sessionCacheManager.GetSession(keySpace);
-            var statement = session.Prepare(CassandraDML.SelectUserIdStatement).Bind(eventId);
-            var result = await session.ExecuteAsync(statement);
-
-            var ids = result.GetRows().Select(row => row.GetValue<Guid>("userid"));
-            statement = session.Prepare(CassandraDML.eventDeleteStatement).Bind(eventId, ids);
-            await session.ExecuteAsync(statement);
+            await session.ExecuteAsync(session.Prepare(CassandraDML.eventDeleteStatement).Bind(eventId, ids));
         }
 
-        public Task ExtendEventAsync(Guid eventId)
+        public async Task ExtendEventAsync(Guid eventId, DateTime endTime)
+        {
+            var ids = await GetAffectedUserIdList(eventId);
+            var session = sessionCacheManager.GetSession(keySpace);
+            await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateEndDateStatement).Bind(endTime, eventId, ids));
+        }
+
+        public async Task EndEventAsync(Guid eventId)
+        {
+            var ids = await GetAffectedUserIdList(eventId);
+            DateTime endTime = DateTime.Now;
+            var session = sessionCacheManager.GetSession(keySpace);
+            await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateEndDateStatement).Bind(endTime, eventId, ids));
+        }
+
+        public Task ParticipantStateUpdated(Guid eventId, Guid participantId, int stateId)
         {
             throw new NotImplementedException();
         }
-
-        public Task ParticipantStateUpdated(Guid eventId)
-        {
-            throw new NotImplementedException();
-        }
-
-
 
         private void SetSessionAndMapper()
         {
@@ -75,6 +67,13 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
             var ips = session.Prepare(CassandraDML.InsertStatement);
 
             mapper = new Mapper(session);
+        }
+
+        private async Task<IEnumerable<Guid>> GetAffectedUserIdList(Guid eventId)
+        {
+            var session = sessionCacheManager.GetSession(keySpace);
+            var result = await session.ExecuteAsync(session.Prepare(CassandraDML.SelectUserIdStatement).Bind(eventId));
+            return result.GetRows().Select(row => row.GetValue<Guid>("userid"));
         }
     }
 }

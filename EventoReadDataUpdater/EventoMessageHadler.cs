@@ -1,11 +1,8 @@
 ﻿using Engaze.Core.MessageBroker.Consumer;
 using Engaze.Evento.ViewDataUpdater.Contract;
 using Engaze.Evento.ViewDataUpdater.Persistance;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using static Engaze.Evento.ViewDataUpdater.Contract.Event;
 
@@ -58,28 +55,27 @@ namespace Engaze.Evento.ViewDataUpdater.Service
                     }
                     break;
                 case "EventoDeleted":
-                    eventId = Guid.Parse(eventoObject.Value<string>("EventoId"));
-                    await this.repo.DeleteAsync(eventId);
+                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
                     break;
-                case "EventoEnded":
-                    eventId = Guid.Parse(eventoObject.Value<string>("EventoId"));
-                    await this.repo.ParticipantStateUpdated(eventId);
+
+                case "EventoEnded":                   
+                    await this.repo.EndEventAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
                     break;
+
                 case "EventoExtended":
-                    eventId = eventoObject.Value<Guid>("EventoId");
-                    await this.repo.ExtendEventAsync(eventId);
+                    await this.repo.ExtendEventAsync(Guid.Parse(eventoObject.Value<string>("EventoId")), eventoObject.Value<DateTime>("EndTime"));
                     break;
+
                 case "ParticipantLeft":
-                    eventId = eventoObject.Value<Guid>("EventoId");
-                    await this.repo.ParticipantStateUpdated(eventId);
+                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
                     break;
+
                 case "ParticipantsListUpdated":
-                    eventId = eventoObject.Value<Guid>("eventId");
-                    await this.repo.ParticipantStateUpdated(eventId);
+                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
                     break;
+
                 case "ParticipantStateUpdated":
-                    eventId = eventoObject.Value<Guid>("eventId");
-                    await this.repo.ParticipantStateUpdated(eventId);
+                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
                     break;
 
                 default:

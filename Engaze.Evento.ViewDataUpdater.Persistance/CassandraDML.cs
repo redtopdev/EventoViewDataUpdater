@@ -16,5 +16,7 @@
             "WHEre id=? ALLOW FILTERING";
 
         internal static string eventDeleteStatement = "Delete from ez_event where id=? and userid IN ?;";
+
+        internal static string eventUpdateEndDateStatement= "update ez_event set endtime =? where id=? and userid IN ?;";
     }
 }
