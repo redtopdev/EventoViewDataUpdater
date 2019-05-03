@@ -1,9 +1,11 @@
 ﻿using Cassandra.Mapping;
 using Engaze.Evento.ViewDataUpdater.Contract;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Engaze.Evento.ViewDataUpdater.Contract.Event;
 
 namespace Engaze.Evento.ViewDataUpdater.Persistance
 {
@@ -56,9 +58,14 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
             await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateEndDateStatement).Bind(endTime, eventId, ids));
         }
 
-        public Task ParticipantStateUpdated(Guid eventId, Guid participantId, int stateId)
+        public async Task UpdateParticipantStateAsync(Guid eventId, Guid participantId, int stateId)
         {
-            throw new NotImplementedException();
+            var ids = await GetAffectedUserIdList(eventId);
+            List<ParticipantsWithStatus> participants = await GetParticipantList(eventId);
+            participants.Where(p => p.UserId == participantId).First().AcceptanceState = stateId;
+            var session = sessionCacheManager.GetSession(keySpace);
+            await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateParticipantsStatement).Bind(JsonConvert.SerializeObject(participants), eventId, ids));
+
         }
 
         private void SetSessionAndMapper()
@@ -74,6 +81,13 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
             var session = sessionCacheManager.GetSession(keySpace);
             var result = await session.ExecuteAsync(session.Prepare(CassandraDML.SelectUserIdStatement).Bind(eventId));
             return result.GetRows().Select(row => row.GetValue<Guid>("userid"));
+        }
+
+        private async Task<List<ParticipantsWithStatus>> GetParticipantList(Guid eventId)
+        {
+            var session = sessionCacheManager.GetSession(keySpace);
+            var result = await session.ExecuteAsync(session.Prepare(CassandraDML.SelectParticipantsStatement).Bind(eventId));
+            return JsonConvert.DeserializeObject<List<ParticipantsWithStatus>>(result.GetRows().First().GetValue<string>("participants"));
         }
     }
 }

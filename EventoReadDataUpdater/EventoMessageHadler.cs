@@ -58,7 +58,7 @@ namespace Engaze.Evento.ViewDataUpdater.Service
                     await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
                     break;
 
-                case "EventoEnded":                   
+                case "EventoEnded":
                     await this.repo.EndEventAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
                     break;
 
@@ -75,7 +75,8 @@ namespace Engaze.Evento.ViewDataUpdater.Service
                     break;
 
                 case "ParticipantStateUpdated":
-                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
+                    await this.repo.UpdateParticipantStateAsync(Guid.Parse(eventoObject.Value<string>("EventoId")),
+                        Guid.Parse(eventoObject.Value<string>("ParticipantId")), eventoObject.Value<int>("NewState"));
                     break;
 
                 default:

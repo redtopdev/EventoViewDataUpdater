@@ -15,8 +15,13 @@
         internal static string SelectUserIdStatement = "select userid from ez_event " +
             "WHEre id=? ALLOW FILTERING";
 
+        internal static string SelectParticipantsStatement = "select participants from ez_event " +
+          "WHEre id=? ALLOW FILTERING";
+
         internal static string eventDeleteStatement = "Delete from ez_event where id=? and userid IN ?;";
 
         internal static string eventUpdateEndDateStatement= "update ez_event set endtime =? where id=? and userid IN ?;";
+
+        internal static string eventUpdateParticipantsStatement = "update ez_event set participants =? where id=? and userid IN ?;";
     }
 }
