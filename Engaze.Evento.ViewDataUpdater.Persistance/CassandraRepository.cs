@@ -1,4 +1,5 @@
 ﻿using Cassandra.Mapping;
+using Engaze.Core.Persistance.Cassandra;
 using Engaze.Evento.ViewDataUpdater.Contract;
 using Newtonsoft.Json;
 using System;
@@ -11,14 +12,13 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
 {
     public class CassandraRepository : IViewDataRepository
     {
-        private CassandraSessionCacheManager sessionCacheManager;
-        private Mapper mapper;
+        private CassandraSessionCacheManager sessionCacheManager;    
         private string keySpace;
 
-        public CassandraRepository(CassandraSessionCacheManager sessionCacheManager, string keySpace)
+        public CassandraRepository(CassandraSessionCacheManager sessionCacheManager, CassandraConfiguration cassandrConfig)
         {
             this.sessionCacheManager = sessionCacheManager;
-            this.keySpace = keySpace;
+            this.keySpace = cassandrConfig.KeySpace;
         }
 
         public async Task InsertAsync(Event @event)
@@ -66,14 +66,6 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
             var session = sessionCacheManager.GetSession(keySpace);
             await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateParticipantsStatement).Bind(JsonConvert.SerializeObject(participants), eventId, ids));
 
-        }
-
-        private void SetSessionAndMapper()
-        {
-            var session = sessionCacheManager.GetSession(keySpace);
-            var ips = session.Prepare(CassandraDML.InsertStatement);
-
-            mapper = new Mapper(session);
         }
 
         private async Task<IEnumerable<Guid>> GetAffectedUserIdList(Guid eventId)

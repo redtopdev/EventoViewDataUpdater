@@ -10,9 +10,9 @@ namespace Engaze.Evento.ViewDataUpdater.Service
 {
     public class EventoMessageHadler : IMessageHandler
     {
-        private CassandraRepository repo;
+        private IViewDataRepository repo;
 
-        public EventoMessageHadler(CassandraRepository cassandraRepository)
+        public EventoMessageHadler(IViewDataRepository cassandraRepository)
         {
             this.repo = cassandraRepository;
         }

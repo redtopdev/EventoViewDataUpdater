@@ -8,6 +8,7 @@
 
     using Engaze.Core.MessageBroker.Consumer;
     using Engaze.Core.Persistance.Cassandra;
+    using Engaze.Evento.ViewDataUpdater.Persistance;
 
     class Program
     {
@@ -37,7 +38,10 @@
              {
                  services.AddLogging();
                  services.ConfigureCassandraServices(hostContext.Configuration);
-                 services.AddSingleton(typeof(IMessageHandler), typeof(EventoMessageHadler));
+                 var sp = services.BuildServiceProvider();
+                 CassandraRepository repo = new CassandraRepository(sp.GetService<CassandraSessionCacheManager>(), sp.GetService<CassandraConfiguration>());
+                 services.AddSingleton(typeof(IViewDataRepository), repo);
+                 services.ConfigureConsumerService(hostContext.Configuration, new EventoMessageHadler(repo));
                  services.AddHostedService<EventoConsumer>();
 
              })
