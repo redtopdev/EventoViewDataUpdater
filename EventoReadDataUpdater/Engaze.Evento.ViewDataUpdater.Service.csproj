@@ -7,9 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Engaze.Core.MessageBroker.Consumer" Version="1.0.5-alpha" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Engaze.Evento.ViewDataUpdater.Contract\Engaze.Evento.ViewDataUpdater.Contract.csproj" />
     <ProjectReference Include="..\Engaze.Evento.ViewDataUpdater.Persistance\Engaze.Evento.ViewDataUpdater.Persistance.csproj" />
   </ItemGroup>
