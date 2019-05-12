@@ -5,15 +5,16 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.DependencyInjection;
     using System;
+
     using Engaze.Core.MessageBroker.Consumer;
-    using Cassandra;
-    using Engaze.Evento.ViewDataUpdater.Persistance;
+    using Engaze.Core.Persistance.Cassandra;
 
     class Program
     {
+        private static string ServiceName = "Evento ViewUpdater service";
         public static void Main(string[] args)
         {
-            Console.WriteLine("Service is starting..");
+            Console.WriteLine(ServiceName + " is starting..");
 
             new HostBuilder().ConfigureHostConfiguration(configHost =>
             {
@@ -35,30 +36,15 @@
              }).ConfigureServices((hostContext, services) =>
              {
                  services.AddLogging();
-                 ConfigureCassandra(services);
+                 services.ConfigureCassandraServices(hostContext.Configuration);
                  services.AddSingleton(typeof(IMessageHandler), typeof(EventoMessageHadler));
                  services.AddHostedService<EventoConsumer>();
 
              })
              .RunConsoleAsync();
 
+            Console.WriteLine(ServiceName + " started");
             Console.ReadLine();
-        }
-
-        private static void ConfigureCassandra(IServiceCollection services)
-        {
-            CassandraConfiguration cc = new CassandraConfiguration(null);
-            var cluster = Cluster.Builder()
-            .AddContactPoint(cc.ContactPoint)
-            .WithPort(cc.Port)
-            .WithCredentials(cc.UserName, cc.Password)
-            .Build();
-
-            CassandraRepository cr = new CassandraRepository(
-                new CassandraSessionCacheManager(cluster), cc.KeySpace);
-            services.AddSingleton(cr.GetType(), cr);
-
-            Console.WriteLine("Service running");
         }
     }
 }

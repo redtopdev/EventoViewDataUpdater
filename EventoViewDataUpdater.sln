@@ -5,11 +5,15 @@ VisualStudioVersion = 15.0.28307.106
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Core.MessageBroker.Consumer", "..\Core\Engaze.Core.MessageBroker.Consumer\Engaze.Core.MessageBroker.Consumer.csproj", "{F075D32F-49A6-4978-ABE4-CC3A41723B50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engaze.Evento.ViewDataUpdater.Service", "EventoReadDataUpdater\Engaze.Evento.ViewDataUpdater.Service.csproj", "{B5C136D5-F36E-4E2B-866B-2F1777915E48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Evento.ViewDataUpdater.Service", "EventoReadDataUpdater\Engaze.Evento.ViewDataUpdater.Service.csproj", "{B5C136D5-F36E-4E2B-866B-2F1777915E48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engaze.Evento.ViewDataUpdater.Contract", "Engaze.Evento.ViewDataUpdater.Contract\Engaze.Evento.ViewDataUpdater.Contract.csproj", "{58BE760B-E8CC-42CF-A84B-8F9754F50909}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Evento.ViewDataUpdater.Contract", "Engaze.Evento.ViewDataUpdater.Contract\Engaze.Evento.ViewDataUpdater.Contract.csproj", "{58BE760B-E8CC-42CF-A84B-8F9754F50909}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engaze.Evento.ViewDataUpdater.Persistance", "Engaze.Evento.ViewDataUpdater.Persistance\Engaze.Evento.ViewDataUpdater.Persistance.csproj", "{2B6B6A41-702B-4420-A0E4-D906F896434D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Evento.ViewDataUpdater.Persistance", "Engaze.Evento.ViewDataUpdater.Persistance\Engaze.Evento.ViewDataUpdater.Persistance.csproj", "{2B6B6A41-702B-4420-A0E4-D906F896434D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Core.Common", "..\Core\Engaze.Core.Common\Engaze.Core.Common.csproj", "{7286057F-79B1-4235-8D18-586C75B2102C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Core.Persistance.Cassandra", "..\Core\Engaze.Core.Persistance.Cassandra\Engaze.Core.Persistance.Cassandra.csproj", "{837B29C4-227A-4BD8-AE7F-ECF09F1B1A28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{2B6B6A41-702B-4420-A0E4-D906F896434D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B6B6A41-702B-4420-A0E4-D906F896434D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B6B6A41-702B-4420-A0E4-D906F896434D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7286057F-79B1-4235-8D18-586C75B2102C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7286057F-79B1-4235-8D18-586C75B2102C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7286057F-79B1-4235-8D18-586C75B2102C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7286057F-79B1-4235-8D18-586C75B2102C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{837B29C4-227A-4BD8-AE7F-ECF09F1B1A28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{837B29C4-227A-4BD8-AE7F-ECF09F1B1A28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{837B29C4-227A-4BD8-AE7F-ECF09F1B1A28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{837B29C4-227A-4BD8-AE7F-ECF09F1B1A28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
