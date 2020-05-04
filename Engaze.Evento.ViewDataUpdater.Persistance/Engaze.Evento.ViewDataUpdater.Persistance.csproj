@@ -1,17 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CassandraCSharpDriver" Version="3.9.0" />
-    <PackageReference Include="Engaze.Core.Persistance.Cassandra" Version="1.0.5-alpha" />
+    <PackageReference Include="Engaze.Core.DataContract" Version="$(EngazeCore)" />
+    <PackageReference Include="Engaze.Core.Persistance.Cassandra" Version="$(EngazeCore)" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Engaze.Evento.ViewDataUpdater.Contract\Engaze.Evento.ViewDataUpdater.Contract.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
 </Project>

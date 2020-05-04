@@ -1,10 +1,9 @@
-﻿using Engaze.Core.MessageBroker.Consumer;
-using Engaze.Evento.ViewDataUpdater.Contract;
+﻿using Engaze.Core.DataContract;
+using Engaze.Core.MessageBroker.Consumer;
 using Engaze.Evento.ViewDataUpdater.Persistance;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
-using static Engaze.Evento.ViewDataUpdater.Contract.Event;
 
 namespace Engaze.Evento.ViewDataUpdater.Service
 {
@@ -25,7 +24,8 @@ namespace Engaze.Evento.ViewDataUpdater.Service
         {
             try
             {
-                await ProcessMessage(JObject.Parse(message));
+
+                await ProcessMessage(JsonConvert.DeserializeObject<EventStoreEvent>(message));
 
 
             }
@@ -35,48 +35,47 @@ namespace Engaze.Evento.ViewDataUpdater.Service
             }
         }
 
-        private async Task ProcessMessage(JObject msgJObject)
-        {
-            string eventType = msgJObject.Value<string>("EventType");
-            JObject eventoObject = msgJObject.Value<JObject>("Data");
-            Guid eventId = Guid.Empty;
+        private async Task ProcessMessage(EventStoreEvent  eventStoreEvent)
+        {           
 
-            switch (eventType)
+            switch (eventStoreEvent.EventType)
             {
-                case "EventoCreated":
-                    Event @event = Event.Map(eventoObject);
+                case OccuredEventType.EventoCreated:
+                    JsonSerializer serializer = new JsonSerializer();
+                    Event @event = JsonConvert.DeserializeObject<Event>(eventStoreEvent.Data);                    
                     if (@event != null)
                     {
-                        foreach (ParticipantsWithStatus participnat in @event.Participants)
+                        await this.repo.InsertAsync(@event);
+                        /*foreach (Participant participant in @event.Participants)
                         {
-                            @event.userid = participnat.UserId;
+                            @event.User = participant.UserId;
                             await this.repo.InsertAsync(@event);
-                        }
+                        }*/
                     }
                     break;
-                case "EventoDeleted":
-                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
+                case OccuredEventType.EventoDeleted:
+                    await this.repo.DeleteAsync(eventStoreEvent.EventId);
                     break;
 
-                case "EventoEnded":
-                    await this.repo.EndEventAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
+                case OccuredEventType.EventoEnded:
+                    await this.repo.EndEventAsync(eventStoreEvent.EventId);
                     break;
 
-                case "EventoExtended":
-                    await this.repo.ExtendEventAsync(Guid.Parse(eventoObject.Value<string>("EventoId")), eventoObject.Value<DateTime>("EndTime"));
+                case OccuredEventType.EventoExtended:
+                    await this.repo.ExtendEventAsync(eventStoreEvent.EventId, JsonConvert.DeserializeObject<DateTime>(eventStoreEvent.Data));
                     break;
 
-                case "ParticipantLeft":
-                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
+                case OccuredEventType.ParticipantLeft:
+                    await this.repo.DeleteAsync(eventStoreEvent.EventId);
                     break;
 
-                case "ParticipantsListUpdated":
-                    await this.repo.DeleteAsync(Guid.Parse(eventoObject.Value<string>("EventoId")));
+                case OccuredEventType.ParticipantsListUpdated:
+                    await this.repo.DeleteAsync(eventStoreEvent.EventId);
                     break;
 
-                case "ParticipantStateUpdated":
-                    await this.repo.UpdateParticipantStateAsync(Guid.Parse(eventoObject.Value<string>("EventoId")),
-                        Guid.Parse(eventoObject.Value<string>("ParticipantId")), eventoObject.Value<int>("NewState"));
+                case OccuredEventType.ParticipantStateUpdated:
+                    await this.repo.UpdateParticipantStateAsync(eventStoreEvent.EventId,
+                        JsonConvert.DeserializeObject<Guid>(eventStoreEvent.Data), 0);
                     break;
 
                 default:

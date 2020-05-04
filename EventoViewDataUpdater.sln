@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.106
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Evento.ViewDataUpdater.Service", "EventoReadDataUpdater\Engaze.Evento.ViewDataUpdater.Service.csproj", "{B5C136D5-F36E-4E2B-866B-2F1777915E48}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Evento.ViewDataUpdater.Contract", "Engaze.Evento.ViewDataUpdater.Contract\Engaze.Evento.ViewDataUpdater.Contract.csproj", "{58BE760B-E8CC-42CF-A84B-8F9754F50909}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engaze.Evento.ViewDataUpdater.Persistance", "Engaze.Evento.ViewDataUpdater.Persistance\Engaze.Evento.ViewDataUpdater.Persistance.csproj", "{2B6B6A41-702B-4420-A0E4-D906F896434D}"
 EndProject
@@ -19,10 +17,6 @@ Global
 		{B5C136D5-F36E-4E2B-866B-2F1777915E48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5C136D5-F36E-4E2B-866B-2F1777915E48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5C136D5-F36E-4E2B-866B-2F1777915E48}.Release|Any CPU.Build.0 = Release|Any CPU
-		{58BE760B-E8CC-42CF-A84B-8F9754F50909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58BE760B-E8CC-42CF-A84B-8F9754F50909}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58BE760B-E8CC-42CF-A84B-8F9754F50909}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58BE760B-E8CC-42CF-A84B-8F9754F50909}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2B6B6A41-702B-4420-A0E4-D906F896434D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2B6B6A41-702B-4420-A0E4-D906F896434D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B6B6A41-702B-4420-A0E4-D906F896434D}.Release|Any CPU.ActiveCfg = Release|Any CPU

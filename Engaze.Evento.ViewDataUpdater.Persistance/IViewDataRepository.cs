@@ -1,4 +1,4 @@
-﻿using Engaze.Evento.ViewDataUpdater.Contract;
+﻿using Engaze.Core.DataContract;
 using System;
 using System.Threading.Tasks;
 

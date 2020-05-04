@@ -37,12 +37,12 @@
              }).ConfigureServices((hostContext, services) =>
              {
                  services.AddLogging();
-                 services.ConfigureCassandraServices(hostContext.Configuration);
+                 services.ConfigureCloudCassandra(hostContext.Configuration);
                  var sp = services.BuildServiceProvider();
                  CassandraRepository repo = new CassandraRepository(sp.GetService<CassandraSessionCacheManager>(), sp.GetService<CassandraConfiguration>());
                  services.AddSingleton(typeof(IViewDataRepository), repo);
                  services.ConfigureConsumerService(hostContext.Configuration, new EventoMessageHadler(repo));
-                 services.AddHostedService<EventoConsumer>();
+                 services.AddHostedService<KafkaConsumer>();
 
              })
              .RunConsoleAsync();

@@ -2,17 +2,19 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Engaze.Core.MessageBroker.Consumer" Version="1.0.5-alpha" />
-    <ProjectReference Include="..\Engaze.Evento.ViewDataUpdater.Contract\Engaze.Evento.ViewDataUpdater.Contract.csproj" />
+    <PackageReference Include="Engaze.Core.MessageBroker.Consumer" Version="$(EngazeCore)" />
     <ProjectReference Include="..\Engaze.Evento.ViewDataUpdater.Persistance\Engaze.Evento.ViewDataUpdater.Persistance.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="secure-connect-engaze.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

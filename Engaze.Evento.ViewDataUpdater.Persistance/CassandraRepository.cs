@@ -1,12 +1,10 @@
-﻿using Cassandra.Mapping;
+﻿using Engaze.Core.DataContract;
 using Engaze.Core.Persistance.Cassandra;
-using Engaze.Evento.ViewDataUpdater.Contract;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static Engaze.Evento.ViewDataUpdater.Contract.Event;
 
 namespace Engaze.Evento.ViewDataUpdater.Persistance
 {
@@ -21,65 +19,189 @@ namespace Engaze.Evento.ViewDataUpdater.Persistance
             this.keySpace = cassandrConfig.KeySpace;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="event"></param>
+        /// <returns></returns>
         public async Task InsertAsync(Event @event)
         {
-            var session = sessionCacheManager.GetSession(keySpace);
-            var ips = session.Prepare(CassandraDML.InsertStatement);
-            var statement = ips.Bind(@event.id, @event.userid, @event.name, @event.eventtypeid, @event.description,
-                @event.starttime, @event.endtime,
-                @event.duration, @event.initiatorid, @event.eventstateid, @event.trackingstateid,
-                @event.trackingstoptime, @event.destinationlatitude,
-                @event.destinationlongitude, @event.destinationname, @event.destinationaddress, @event.remindertypeid, @event.reminderoffset,
-                @event.trackingstartoffset, @event.isrecurring, @event.recurrencefrequencytypeid, @event.recurrencecount, @event.recurrencefrequency,
-                @event.recurrencedaysofweek, @event.participantswithacceptancestate);
-
+            await InsertAsyncEventData(@event);
+            InsertEventParticipantMapping(@event);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="event"></param>
+        /// <returns></returns>
+        private async Task InsertAsyncEventData(Event @event)
+        {
+            var session = sessionCacheManager.GetSession(keySpace);            
+            string eventJson = JsonConvert.SerializeObject(@event);
+            string insertEventData = "INSERT INTO EventData " +
+            "(EventId, StartTime, EndTime, EventDetails)" +
+            "values " +
+            "(" + @event.EventId + "," + @event.StartTime + "," + @event.EndTime + ",'" + eventJson + "');";
+            var ips = session.Prepare(insertEventData);
+            var statement = ips.Bind();
             await session.ExecuteAsync(statement);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="event"></param>
+        /// <returns></returns>
+        private void InsertEventParticipantMapping(Event @event)
+        {
+            var session = sessionCacheManager.GetSession(keySpace);
+            List<Guid> participantList = GetEventParticipantsList(@event).ToList();
+            participantList.ForEach(async participant =>
+            {
+                string insertEventParticipantMapping = "INSERT INTO EventParticipantMapping " +
+                         "(UserId ,EventId)" +
+                        "values " +
+                        "("+ participant + ","+ @event.EventId + ");";
+                var ips = session.Prepare(insertEventParticipantMapping);
+                string eventJson = JsonConvert.SerializeObject(@event);
+                var statement = ips.Bind();
+                await session.ExecuteAsync(statement);
+            }
+            );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="event"></param>
+        /// <returns></returns>
+        private IEnumerable<Guid> GetEventParticipantsList(Event @event)
+        {
+            IEnumerable<Guid> participantsList = @event.Participants.Select(x=>x.UserId).Append(@event.InitiatorId);
+            return participantsList.Distinct();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <returns></returns>
         public async Task DeleteAsync(Guid eventId)
         {
-            var ids = await GetAffectedUserIdList(eventId);
-            var session = sessionCacheManager.GetSession(keySpace);
-            await session.ExecuteAsync(session.Prepare(CassandraDML.eventDeleteStatement).Bind(eventId, ids));
+            await DeleteAsyncEventData(eventId);
+            DeleteEventParticipantMapping(eventId);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <returns></returns>
+        public async Task DeleteAsyncEventData(Guid eventId)
+        {
+            var session = sessionCacheManager.GetSession(keySpace);
+            string eventDeleteStatement = "Delete from EventData where EventId="+ eventId + ";";
+            await session.ExecuteAsync(session.Prepare(eventDeleteStatement).Bind(eventId));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventId"></param>
+        public void DeleteEventParticipantMapping(Guid eventId)
+        {
+            List<Guid> participantList = GetEventParticipantsList(eventId).ToList();
+            var session = sessionCacheManager.GetSession(keySpace);
+            participantList.ForEach(async participant =>
+            {
+                string deleteEventParticipantMappings = "Delete from EventParticipantMapping where UserId = "+ participant + " AND EventId="+ eventId + ";";
+                var ips = session.Prepare(deleteEventParticipantMappings);
+                var statement = ips.Bind(participant, eventId);
+                await session.ExecuteAsync(statement);
+            }
+            );
+        }
+
+
+        /// <summary>
+        /// gets events by userId
+        /// </summary>
+        /// <param name="userid">userId</param>
+        /// <returns>list of event</returns>
+        private IEnumerable<Guid> GetEventParticipantsList(Guid eventId)
+        {
+            var session = sessionCacheManager.GetSession(keySpace);
+            string query = "SELECT UserId FROM EventParticipantMapping WHERE EventId=" + eventId.ToString() + "ALLOW FILTERING;";
+            var preparedStatement = session.Prepare(query);
+            var resultSet = session.Execute(preparedStatement.Bind());
+            return resultSet.Select(row => row.GetValue<Guid>("userid"));
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="endTime"></param>
+        /// <returns></returns>
         public async Task ExtendEventAsync(Guid eventId, DateTime endTime)
         {
-            var ids = await GetAffectedUserIdList(eventId);
+            string datetimeUtcIso8601 = endTime.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz");
+            string extendEventStatement = "UPDATE EventData SET endtime = '"+ datetimeUtcIso8601 + "' WHERE EventID="+ eventId + ";";
             var session = sessionCacheManager.GetSession(keySpace);
-            await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateEndDateStatement).Bind(endTime, eventId, ids));
+            await session.ExecuteAsync(session.Prepare(extendEventStatement).Bind());
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="endTime"></param>
+        /// <returns></returns>
         public async Task EndEventAsync(Guid eventId)
         {
-            var ids = await GetAffectedUserIdList(eventId);
-            DateTime endTime = DateTime.Now;
+            string datetimeUtcIso8601 = DateTime.UtcNow.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz");
+            string endEventStatement = "UPDATE EventData SET endtime = '" + datetimeUtcIso8601 + "' WHERE EventID=" + eventId + ";";
             var session = sessionCacheManager.GetSession(keySpace);
-            await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateEndDateStatement).Bind(endTime, eventId, ids));
+            await session.ExecuteAsync(session.Prepare(endEventStatement).Bind());
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventId"></param>
+        /// <param name="participantId"></param>
+        /// <param name="stateId"></param>
+        /// <returns></returns>
         public async Task UpdateParticipantStateAsync(Guid eventId, Guid participantId, int stateId)
         {
-            var ids = await GetAffectedUserIdList(eventId);
-            List<ParticipantsWithStatus> participants = await GetParticipantList(eventId);
-            participants.Where(p => p.UserId == participantId).First().AcceptanceState = stateId;
+            Event @event = GetEvent(eventId);
+            Participant participant = new Participant(participantId, (EventAcceptanceState)stateId);
+
+            @event.Participants  = @event.Participants.Select(p => p.UserId == participantId ? participant : p);
+            string eventJson = JsonConvert.SerializeObject(@event);
+
+            string UpdateParticipantStateStatement = "UPDATE EventData SET EventDetails = '"+eventJson+"' WHERE EventID="+ eventId + ";";
             var session = sessionCacheManager.GetSession(keySpace);
-            await session.ExecuteAsync(session.Prepare(CassandraDML.eventUpdateParticipantsStatement).Bind(JsonConvert.SerializeObject(participants), eventId, ids));
+            await session.ExecuteAsync(session.Prepare(UpdateParticipantStateStatement).Bind());
 
         }
 
-        private async Task<IEnumerable<Guid>> GetAffectedUserIdList(Guid eventId)
-        {
-            var session = sessionCacheManager.GetSession(keySpace);
-            var result = await session.ExecuteAsync(session.Prepare(CassandraDML.SelectUserIdStatement).Bind(eventId));
-            return result.GetRows().Select(row => row.GetValue<Guid>("userid"));
-        }
+        /// <summary>
+        /// gets event by eventId
+        /// </summary>
+        /// <param name="eventId">eventId</param>
+        /// <returns>event</returns>
 
-        private async Task<List<ParticipantsWithStatus>> GetParticipantList(Guid eventId)
+        private Event GetEvent(Guid eventId)
         {
-            var session = sessionCacheManager.GetSession(keySpace);
-            var result = await session.ExecuteAsync(session.Prepare(CassandraDML.SelectParticipantsStatement).Bind(eventId));
-            return JsonConvert.DeserializeObject<List<ParticipantsWithStatus>>(result.GetRows().First().GetValue<string>("participants"));
+            string query = "SELECT EventDetails from EventData WHERE EventId=" + eventId.ToString() + ";";
+            var sessionL = sessionCacheManager.GetSession(keySpace);
+            var preparedStatement = sessionL.Prepare(query);
+            var resultSet = sessionL.Execute(preparedStatement.Bind());
+            return JsonConvert.DeserializeObject<Event>(resultSet.First().GetValue<string>("eventdetails"));
         }
     }
 }
