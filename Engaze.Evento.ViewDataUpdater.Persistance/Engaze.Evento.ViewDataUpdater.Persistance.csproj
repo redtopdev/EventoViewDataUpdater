@@ -8,7 +8,7 @@
     <PackageReference Include="Engaze.Core.DataContract" Version="$(EngazeCore)" />
     <PackageReference Include="Engaze.Core.Persistance.Cassandra" Version="$(EngazeCore)" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
 </Project>
